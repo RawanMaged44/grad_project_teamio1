@@ -66,7 +66,10 @@ class _AddTaskSheetContentState extends State<AddTaskSheetContent> {
     if (success) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.taskCreatedSuccess)),
+        const SnackBar(
+          content: Text(AppTexts.taskCreatedSuccess),
+          backgroundColor: Colors.green,
+        ),
       );
     } else {
       final error = taskCubit.lastError ?? AppTexts.taskCreatedFailed;

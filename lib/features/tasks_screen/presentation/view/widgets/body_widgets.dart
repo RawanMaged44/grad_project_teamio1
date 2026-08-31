@@ -33,12 +33,24 @@ class TasksBody extends StatelessWidget {
         }
 
         if (state is TaskSuccess) {
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: state.tasks.length,
-            itemBuilder: (context, index) {
-              return TaskCard(task: state.tasks[index]);
-            },
+          if (state.tasks.isEmpty) {
+            return const Center(
+              child: Text(AppTexts.noTasksYet,
+                  style: TextStyle(color: Colors.white54)),
+            );
+          }
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: state.tasks.length,
+                  itemBuilder: (context, index) {
+                    return TaskCard(task: state.tasks[index]);
+                  },
+                ),
+              ),
+            ],
           );
         }
 

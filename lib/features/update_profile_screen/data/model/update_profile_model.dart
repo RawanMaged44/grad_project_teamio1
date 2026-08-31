@@ -8,7 +8,8 @@ class UpdateProfileModel {
 
   UpdateProfileModel.fromJson(dynamic json) {
     success = json['success'];
-    message = json['message'];
+    // backend returns success message in 'data' field as a string
+    message = json['data'] is String ? json['data'] : json['message'];
     errors = json['errors'];
     statusCode = json['statusCode'];
   }

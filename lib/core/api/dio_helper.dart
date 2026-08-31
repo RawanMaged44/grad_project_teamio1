@@ -12,6 +12,8 @@ class DioHelper {
       receiveDataWhenStatusError: true,
       connectTimeout: const Duration(seconds: 20),
       receiveTimeout: const Duration(seconds: 20),
+      // Accept all status codes < 500 so 404 is handled in code, not thrown as exception
+      validateStatus: (status) => status != null && status < 500,
     ),
   );
 
@@ -32,6 +34,53 @@ class DioHelper {
             options.headers['Authorization'] = 'Bearer $token';
           }
           return handler.next(options);
+        },
+        onResponse: (response, handler) async {
+          // Handle 401 at response level (since validateStatus accepts it now)
+          if (response.statusCode == 401) {
+            debugPrint('DioHelper: Got 401 response, trying refresh token...');
+            final refreshToken = await StorageHelper.getRefreshToken();
+            if (refreshToken != null && refreshToken.isNotEmpty) {
+              final responseEither = await loginRepo.refreshToken(refreshToken: refreshToken);
+              bool handled = false;
+              await responseEither.fold(
+                (error) async {
+                  debugPrint('DioHelper: Refresh token failed: $error');
+                  await StorageHelper.clearTokens();
+                  _navigateToLogin(navigatorKey);
+                  handler.next(response);
+                  handled = true;
+                },
+                (refreshResponse) async {
+                  final newToken = refreshResponse['data']?['token'];
+                  final newRefreshToken = refreshResponse['data']?['refreshToken'];
+                  if (newToken != null && newRefreshToken != null) {
+                    final oldUserName = await StorageHelper.getUserName();
+                    await StorageHelper.saveTokens(
+                      accessToken: newToken,
+                      refreshToken: newRefreshToken,
+                      userName: oldUserName ?? '',
+                    );
+                    final requestOptions = response.requestOptions;
+                    requestOptions.headers['Authorization'] = 'Bearer $newToken';
+                    final retryResponse = await dio.fetch(requestOptions);
+                    handler.resolve(retryResponse);
+                    handled = true;
+                  } else {
+                    await StorageHelper.clearTokens();
+                    _navigateToLogin(navigatorKey);
+                    handler.next(response);
+                    handled = true;
+                  }
+                },
+              );
+              if (handled) return;
+            } else {
+              await StorageHelper.clearTokens();
+              _navigateToLogin(navigatorKey);
+            }
+          }
+          return handler.next(response);
         },
         onError: (e, handler) async {
           debugPrint('DioHelper ERROR: ${e.response?.statusCode} - ${e.requestOptions.path}');

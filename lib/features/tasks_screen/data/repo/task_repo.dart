@@ -4,5 +4,7 @@ import '../model/task_model.dart';
 abstract class TaskRepo {
   Future<Either<String, List<Tasks>>> getMyTasks({int? status});
   Future<Either<String, bool>> createTask(CreateTaskRequest request);
+  Future<Either<String, bool>> updateTask(String taskId, CreateTaskRequest request);
+  Future<Either<String, bool>> completeTask(String taskId);
   Future<Either<String, bool>> deleteTask(String taskId);
 }

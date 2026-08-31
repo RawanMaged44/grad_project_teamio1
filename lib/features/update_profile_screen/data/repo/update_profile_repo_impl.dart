@@ -41,25 +41,8 @@ class UpdateProfileRepoImpl implements UpdateProfileRepo {
             filename: avatar.path.split('/').last,
           ),
         ));
-      } else if (currentAvatarUrl != null && currentAvatarUrl.isNotEmpty) {
-        // No new image — download current avatar and re-send it
-        final fullUrl = ApiConstants.buildImageUrl(currentAvatarUrl);
-        if (fullUrl != null) {
-          final tempDir = Directory.systemTemp;
-          final fileName = currentAvatarUrl.split('/').last.split('?').first;
-          final tempFile = File('${tempDir.path}/$fileName');
-
-          await Dio().download(fullUrl, tempFile.path);
-
-          data.files.add(MapEntry(
-            'Avatar',
-            await MultipartFile.fromFile(
-              tempFile.path,
-              filename: fileName,
-            ),
-          ));
-        }
       }
+      // If no new avatar selected — skip it, backend will keep the existing one
 
       final response = await dio.put(
         EndPoints.updateStudentProfile,

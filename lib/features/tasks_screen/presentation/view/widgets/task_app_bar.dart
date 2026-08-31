@@ -19,10 +19,6 @@ class TaskAppBar extends StatelessWidget implements PreferredSizeWidget {
           onPressed: () => showAddTaskSheet(context),
           icon: Icon(Icons.add_circle, color: Colors.white, size: 26.sp),
         ),
-        IconButton(
-          onPressed: () {},
-          icon: Icon(Icons.delete, color: Colors.white, size: 24.sp),
-        ),
         SizedBox(width: 4.w),
       ],
     );

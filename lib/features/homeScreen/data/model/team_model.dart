@@ -29,6 +29,11 @@ class TeamData {
   String? createAt;
   int? memberCount;
   String? leaderName;
+  String? teamChatId;
+  String? teamChatWithDoctorId;
+  String? doctorName;
+  String? doctorAvatarUrl;
+  DoctorChatModel? doctorChat;
   List<MemberModel>? members;
 
   TeamData({
@@ -39,6 +44,11 @@ class TeamData {
     this.createAt,
     this.memberCount,
     this.leaderName,
+    this.teamChatId,
+    this.teamChatWithDoctorId,
+    this.doctorName,
+    this.doctorAvatarUrl,
+    this.doctorChat,
     this.members,
   });
 
@@ -50,9 +60,16 @@ class TeamData {
     createAt = json['createAt'];
     memberCount = json['memberCount'];
     leaderName = json['leaderName'];
+    teamChatId = json['teamChatId'];
+    teamChatWithDoctorId = json['teamChatWithDoctorId'];
+    doctorName = json['doctorName'];
+    doctorAvatarUrl = ApiConstants.buildImageUrl(json['doctorAvatarUrl']);
+    doctorChat = json['doctorChat'] != null
+        ? DoctorChatModel.fromJson(json['doctorChat'])
+        : null;
     members = json['members'] != null
         ? List<MemberModel>.from(
-        json['members'].map((x) => MemberModel.fromJson(x)))
+            json['members'].map((x) => MemberModel.fromJson(x)))
         : [];
   }
 
@@ -65,7 +82,42 @@ class TeamData {
       'createAt': createAt,
       'memberCount': memberCount,
       'leaderName': leaderName,
+      'teamChatId': teamChatId,
+      'teamChatWithDoctorId': teamChatWithDoctorId,
+      'doctorName': doctorName,
+      'doctorAvatarUrl': doctorAvatarUrl,
+      'doctorChat': doctorChat?.toJson(),
       'members': members?.map((x) => x.toJson()).toList(),
+    };
+  }
+}
+
+class DoctorChatModel {
+  String? doctorId;
+  String? chatId;
+  String? teamChatIdWithDoctor;
+  String? teamChatIdWithoutDoctor;
+
+  DoctorChatModel({
+    this.doctorId,
+    this.chatId,
+    this.teamChatIdWithDoctor,
+    this.teamChatIdWithoutDoctor,
+  });
+
+  DoctorChatModel.fromJson(Map<String, dynamic> json) {
+    doctorId = json['doctorId'];
+    chatId = json['chatId'];
+    teamChatIdWithDoctor = json['teamChatIdWithDoctor'];
+    teamChatIdWithoutDoctor = json['teamChatIdWithoutDoctor'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'doctorId': doctorId,
+      'chatId': chatId,
+      'teamChatIdWithDoctor': teamChatIdWithDoctor,
+      'teamChatIdWithoutDoctor': teamChatIdWithoutDoctor,
     };
   }
 }

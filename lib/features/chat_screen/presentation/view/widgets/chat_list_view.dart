@@ -13,6 +13,21 @@ class ChatListView extends StatelessWidget {
 
   const ChatListView({super.key, required this.searchQuery});
 
+  /// Resolves the members count to display in the chat app bar.
+  /// - chatType 1 (team only): use count from backend, default to 10 if missing
+  /// - chatType 2 (team + doctor): use count + 1, default to 11 if missing
+  int? _resolveMembersCount(int? chatType, int? membersCount) {
+    if (chatType == 1) {
+      final count = (membersCount == null || membersCount == 0) ? 10 : membersCount;
+      return count;
+    }
+    if (chatType == 2) {
+      final base = (membersCount == null || membersCount == 0) ? 10 : membersCount;
+      return base + 1;
+    }
+    return membersCount; // private chat — not shown anyway
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ChatCubit, ChatState>(
@@ -73,7 +88,7 @@ class ChatListView extends StatelessWidget {
                               name: chat.name ?? "",
                               avatar: null,
                               chatType: chat.chatType ?? 0,
-                              membersCount: chat.membersCount,
+                              membersCount: _resolveMembersCount(chat.chatType, chat.membersCount),
                               isPinned: chat.isPinned ?? false,
                             ),
                           ),

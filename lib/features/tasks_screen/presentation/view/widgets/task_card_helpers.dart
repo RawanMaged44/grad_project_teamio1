@@ -21,18 +21,27 @@ class TaskCardHelpers {
   }
 
   static Widget buildStatusIcon(int? status) {
-    if (status == 2) {
+    if (status == 1) {
+      // Completed — filled blue circle with check (Figma)
       return Container(
-        width: 32,
-        height: 32,
-        decoration:  BoxDecoration(
+        width: 30,
+        height: 30,
+        decoration: const BoxDecoration(
           shape: BoxShape.circle,
-          color:AppColors.grayColor.withOpacity(0.62),
+          color: Color(0xFFB3D4F5),
         ),
-        child: const Icon(Icons.access_time_filled_outlined, color: Colors.white, size: 18),
+        child: const Icon(Icons.check, color: Color(0xFF1A1A2E), size: 16),
       );
     }
-    // Not done: clock icon only (no container)
-    return const Icon(Icons.watch_later_outlined, color: Colors.white38, size: 28);
+    // Pending — single outlined circle with clock inside (Figma)
+    return Container(
+      width: 30,
+      height: 30,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white30, width: 1.5),
+      ),
+      child: const Icon(Icons.access_time, color: Colors.white38, size: 16),
+    );
   }
 }

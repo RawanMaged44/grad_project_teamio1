@@ -29,7 +29,7 @@ class TaskCubit extends Cubit<TaskState> {
     required String title,
     required String description,
     required String deadline,
-    String? teamId, // kept for backward compat but not used
+    String? teamId,
   }) async {
     final request = CreateTaskRequest(
       title: title,
@@ -48,6 +48,55 @@ class TaskCubit extends Cubit<TaskState> {
       },
     );
     if (success) await getMyTasks();
+    return success;
+  }
+
+  Future<bool> updateTask({
+    required String taskId,
+    required String title,
+    required String description,
+    required String deadline,
+    int status = 0,
+  }) async {
+    final request = CreateTaskRequest(
+      title: title,
+      description: description,
+      deadline: deadline,
+      status: status,
+    );
+    final result = await taskRepo.updateTask(taskId, request);
+    bool success = false;
+    result.fold(
+      (error) {
+        lastError = error;
+        success = false;
+      },
+      (_) {
+        success = true;
+      },
+    );
+    if (success) await getMyTasks();
+    return success;
+  }
+
+  Future<bool> completeTask(String taskId) async {
+    final result = await taskRepo.completeTask(taskId);
+    bool success = false;
+    result.fold(
+      (error) {
+        lastError = error;
+        success = false;
+      },
+      (_) {
+        success = true;
+        // Update locally without refetching
+        final index = myTasks.indexWhere((t) => t.id == taskId);
+        if (index != -1) {
+          myTasks[index].status = 1;
+          emit(TaskSuccess(List.from(myTasks)));
+        }
+      },
+    );
     return success;
   }
 

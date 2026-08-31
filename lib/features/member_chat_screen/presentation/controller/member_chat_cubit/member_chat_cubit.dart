@@ -82,13 +82,14 @@ class MemberChatCubit extends Cubit<MemberChatState> {
     result.fold(
       (l) => emit(MemberChatErrorState(errorMessage: l)),
       (r) async {
-        // Filter out messages sent before the clear timestamp
+        // Filter out messages sent before (or at) the clear timestamp — server-side
+        // ClearedAt may not be enforced yet, so we do it client-side too.
         if (clearedAt != null && r.data?.items != null) {
           r.data!.items = r.data!.items!.where((msg) {
-            if (msg.createAt == null) return false;
+            if (msg.createAt == null) return true;
             try {
-              final msgTime = DateTime.parse(msg.createAt!);
-              return msgTime.isAfter(clearedAt);
+              final msgTime = DateTime.parse(msg.createAt!).toUtc();
+              return msgTime.isAfter(clearedAt.toUtc());
             } catch (_) {
               return true;
             }
@@ -159,9 +160,14 @@ class MemberChatCubit extends Cubit<MemberChatState> {
       onChatCreated?.call(newChatId);
       final optimisticMessages = List<MessageItem>.from(manager.allMessages);
       _isInitialized = false;
+      // Remove clear filter so new messages after clear are visible
+      await StorageHelper.unmarkChatAsCleared(newChatId);
       await _loadMessagesAndConnect();
       _mergeOptimisticMessages(optimisticMessages);
       _emitSuccess(newlyCreatedChatId: newChatId);
+    } else if (chatId != null) {
+      // Remove clear filter on first message sent after a clear
+      await StorageHelper.unmarkChatAsCleared(chatId!);
     }
   }
 

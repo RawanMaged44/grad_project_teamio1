@@ -26,8 +26,6 @@ class TaskRepoImpl implements TaskRepo {
   Future<Either<String, List<Tasks>>> getMyTasks({int? status}) async {
     try {
       final opts = await _authOptions();
-      // Accept 404 as valid response (means no tasks yet)
-      opts.validateStatus = (status) => status != null && status < 500;
       final response = await dio.get(
         _url(EndPoints.myTasks),
         queryParameters: status != null ? {'status': status} : null,
@@ -55,6 +53,49 @@ class TaskRepoImpl implements TaskRepo {
       final response = await dio.post(
         _url(EndPoints.createTask),
         data: request.toJson(),
+        options: opts,
+      );
+      if (response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300) {
+        return const Right(true);
+      }
+      return Left('Server returned status ${response.statusCode}');
+    } on DioException catch (e) {
+      return Left(_extractError(e));
+    } catch (e) {
+      return Left(e.toString());
+    }
+  }
+
+  @override
+  Future<Either<String, bool>> updateTask(String taskId, CreateTaskRequest request) async {
+    try {
+      final opts = await _authOptions();
+      final response = await dio.put(
+        _url(EndPoints.updateTask(taskId)),
+        data: request.toJson(),
+        options: opts,
+      );
+      if (response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300) {
+        return const Right(true);
+      }
+      return Left('Server returned status ${response.statusCode}');
+    } on DioException catch (e) {
+      return Left(_extractError(e));
+    } catch (e) {
+      return Left(e.toString());
+    }
+  }
+
+  @override
+  Future<Either<String, bool>> completeTask(String taskId) async {
+    try {
+      final opts = await _authOptions();
+      final response = await dio.put(
+        _url(EndPoints.completeTask(taskId)),
         options: opts,
       );
       if (response.statusCode != null &&

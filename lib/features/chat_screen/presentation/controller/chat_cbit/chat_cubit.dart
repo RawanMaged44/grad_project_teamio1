@@ -34,4 +34,15 @@ class ChatCubit extends Cubit<ChatState> {
       (r) => getMyChats(), // refresh list after toggle
     );
   }
+
+  Future<bool> clearChat(String chatId) async {
+    final result = await chatRepo.clearChat(chatId);
+    return result.fold(
+      (l) => false,
+      (r) {
+        getMyChats(); // refresh list after clear
+        return true;
+      },
+    );
+  }
 }

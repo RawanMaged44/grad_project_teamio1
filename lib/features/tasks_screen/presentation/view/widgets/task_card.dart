@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:graduation_project/core/const%20Widgets/app_confirm_dialog.dart';
 import 'package:graduation_project/core/utils/app_colors.dart';
 import 'package:graduation_project/core/utils/app_styles.dart';
 import 'package:graduation_project/core/utils/app_texts.dart';
@@ -11,6 +12,17 @@ import 'task_card_helpers.dart';
 class TaskCard extends StatelessWidget {
   final Tasks task;
   const TaskCard({super.key, required this.task});
+
+  Future<bool> _showDeleteConfirm(BuildContext context) {
+    return AppConfirmDialog.show(
+      context: context,
+      title: AppTexts.deleteTask,
+      message: AppTexts.deleteTaskConfirm,
+      confirmLabel: AppTexts.delete,
+      confirmColor: AppColors.redColor,
+      cancelLabel: AppTexts.cancel,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,34 +87,5 @@ class TaskCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<bool> _showDeleteConfirm(BuildContext context) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            backgroundColor: const Color(0xFF1A1A2E),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.r)),
-            title: Text(AppTexts.deleteTask,
-                style: TextStyle(color: Colors.white, fontSize: 16.sp)),
-            content: Text(AppTexts.deleteTaskConfirm,
-                style: TextStyle(color: Colors.grey, fontSize: 14.sp)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text(AppTexts.cancel,
-                    style: TextStyle(color: Colors.white70, fontSize: 14.sp)),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text(AppTexts.delete,
-                    style:
-                        TextStyle(color: AppColors.redColor, fontSize: 14.sp)),
-              ),
-            ],
-          ),
-        ) ??
-        false;
   }
 }

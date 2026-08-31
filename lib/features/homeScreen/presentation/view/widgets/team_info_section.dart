@@ -11,6 +11,36 @@ class TeamInfoSection extends StatelessWidget {
 
   const TeamInfoSection({super.key, required this.team});
 
+  void _navigateToGroupChat(BuildContext context, {
+    required String? chatId,
+    required String name,
+    required String? avatarUrl,
+    required int chatType,
+    int? membersCount,
+  }) {
+    if (chatId == null || chatId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Chat not available yet')),
+      );
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MemberChatScreen(
+          args: ChatArgsModel(
+            chatId: chatId,
+            userId: '',
+            name: name,
+            avatar: avatarUrl,
+            chatType: chatType,
+            membersCount: membersCount,
+          ),
+        ),
+      ),
+    );
+  }
+
   void _navigateToPrivateChat(BuildContext context, MemberModel member) {
     if (member.chatId == null || member.chatId!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -41,6 +71,16 @@ class TeamInfoSection extends StatelessWidget {
     final leader = leaderIndex != -1 ? members[leaderIndex] : null;
     final hasLeaderChat = leader != null && (leader.chatId?.isNotEmpty ?? false);
 
+    // Doctor private chat: use doctorChat.chatId (direct 1-on-1 with doctor)
+    // If null, use doctorId so MemberChatScreen can create the chat on first message
+    final doctorPrivateChatId = team.doctorChat?.chatId;
+    final doctorId = team.doctorChat?.doctorId ?? '';
+    final doctorName = team.doctorName ?? 'Supervisor';
+    final doctorAvatar = team.doctorAvatarUrl;
+
+    // Team chat (students only): use teamChatId
+    final teamChatId = team.teamChatId;
+
     return SizedBox(
       height: 290.h,
       child: Row(
@@ -49,7 +89,14 @@ class TeamInfoSection extends StatelessWidget {
             flex: 1,
             child: BigInfoCard(
               team: team,
-              onButtonPressed: () {},
+              onButtonPressed: () => _navigateToGroupChat(
+                context,
+                chatId: teamChatId,
+                name: 'Team ${team.teamName ?? ''}',
+                avatarUrl: null,
+                chatType: 1,
+                membersCount: (team.memberCount ?? 0) > 0 ? team.memberCount : 10,
+              ),
             ),
           ),
           SizedBox(width: 15.w),
@@ -60,8 +107,27 @@ class TeamInfoSection extends StatelessWidget {
               children: [
                 SmallInfoCard(
                   title: 'Supervisor',
-                  imageUrl: null,
-                  onTap: null,
+                  imageUrl: doctorAvatar,
+                  onTap: doctorId.isNotEmpty
+                      ? () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MemberChatScreen(
+                                args: ChatArgsModel(
+                                  chatId: doctorPrivateChatId, // null = will be created on first message
+                                  userId: doctorId,
+                                  name: doctorName,
+                                  avatar: doctorAvatar,
+                                  chatType: 0, // private chat
+                                ),
+                              ),
+                            ),
+                          )
+                      : () => ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Supervisor info not available yet'),
+                            ),
+                          ),
                 ),
                 SizedBox(height: 16.h),
                 SmallInfoCard(

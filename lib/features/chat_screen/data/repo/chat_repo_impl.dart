@@ -28,4 +28,14 @@ class ChatRepoImpl implements ChatRepo {
       return Left(e.toString());
     }
   }
+
+  @override
+  Future<Either<String, bool>> clearChat(String chatId) async {
+    try {
+      await dio.post(EndPoints.clearChat(chatId));
+      return const Right(true);
+    } catch (e) {
+      return Left(e.toString());
+    }
+  }
 }
